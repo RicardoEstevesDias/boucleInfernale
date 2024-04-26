@@ -1,0 +1,47 @@
+'	Vous êtes dans la boucle
+
+
+Option Explicit
+Dim objFSO, chiffre, objFile, MonShell, writeFile, fileName, stopScript, stopper, stopTxt, chemin, scriptDir, bclDir
+
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set MonShell = WScript.CreateObject("WScript.Shell")
+
+fileName = Split(WScript.ScriptName, ".")(0)
+
+chiffre = 0
+
+scriptDir = objFSO.GetParentFolderName(WScript.ScriptFullName)
+bclDir = objFSO.GetParentFolderName(scriptDir)
+
+stopScript = False
+Set stopper = objFSO.OpenTextFile(bclDir & "/Composants/stop.txt", 1)
+stopTxt = stopper.ReadLine
+stopper.Close
+if stopTxt = 1 Then stopScript = True
+
+Do While Not stopScript
+
+	chemin = scriptDir & "\"& fileName & "-" & chiffre & ".vbs"
+	
+	Set objFile = objFSO.CreateTextFile(chemin)
+	Set writeFile = objFSO.OpenTextFile(bclDir & "/Composants/script.txt", 1)
+	
+	Do Until writeFile.AtEndOfStream
+		objFile.WriteLine (writeFile.ReadLine)
+	Loop
+
+	objFile.Close
+	writeFile.Close
+
+	WScript.Sleep 100
+	MonShell.Run chemin
+	
+	chiffre = chiffre + 1
+	
+	Set stopper = objFSO.OpenTextFile(bclDir & "/Composants/stop.txt", 1)
+	stopTxt = stopper.ReadLine
+	stopper.Close
+	if stopTxt = 1 Then stopScript = True
+	
+Loop                              
